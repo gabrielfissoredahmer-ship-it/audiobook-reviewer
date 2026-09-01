@@ -1,0 +1,32 @@
+name: AudiobookReviewer
+options:
+  bundleIdPrefix: com.gabrielfissore
+  deploymentTarget:
+    iOS: "18.0"
+packages:
+  PiperObjC:
+    url: https://github.com/IhorShevchuk/piper-objc.git
+    from: 0.2.32
+  ZIPFoundation:
+    url: https://github.com/weichsel/ZIPFoundation.git
+    from: 0.9.19
+targets:
+  AudiobookReviewer:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    dependencies:
+      - package: PiperObjC
+        product: piper-player
+      - package: ZIPFoundation
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gabrielfissore.audiobookreviewer
+        SWIFT_VERSION: 6.0
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIBackgroundModes: audio
+        TARGETED_DEVICE_FAMILY: 1
+        CODE_SIGN_STYLE: Automatic
