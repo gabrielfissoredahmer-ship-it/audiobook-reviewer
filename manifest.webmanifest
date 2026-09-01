@@ -1,0 +1,9 @@
+{
+  "name": "Audiobook Reviewer",
+  "short_name": "Audiobook",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d0f13",
+  "theme_color": "#0d0f13",
+  "description": "Revisor de audiobook com TTS neural local no dispositivo"
+}
