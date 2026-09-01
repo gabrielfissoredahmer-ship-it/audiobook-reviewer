@@ -1,241 +1,111 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="theme-color" content="#0d0f13"/>
-<link rel="manifest" href="./manifest.webmanifest"/>
-<title>Audiobook Reviewer</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0c0f14">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>Audiobook Reviewer R03</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 <style>
-:root{--bg:#0d0f13;--panel:#171a21;--panel2:#20252e;--text:#f4f4f2;--muted:#9da6b3;--gold:#d8b46a;--border:#2c333e;--red:#d96f6f}
+:root{--bg:#0c0f14;--panel:#171b23;--panel2:#11161e;--line:#303746;--txt:#f5f5f3;--muted:#9ca5b3;--gold:#ddb966;--gold2:#f0d38c;--bad:#ee7878;--ok:#79c995}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif}
-body{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
-header{position:sticky;top:0;z-index:10;background:rgba(13,15,19,.95);backdrop-filter:blur(14px);padding:calc(12px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid var(--border)}
-h1{font-size:18px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}
-main{padding:14px;max-width:850px;margin:auto}.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:12px}
-.btn{border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:14px;padding:12px 14px;font-size:15px;font-weight:700;min-height:46px}.btn.primary{background:var(--gold);border-color:var(--gold);color:#1a150c}.btn.block{width:100%}.btn:disabled{opacity:.45}
-input[type=file]{display:none} select,input[type=range]{width:100%;background:#10141a;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px;font-size:15px}
-label{display:block;font-size:12px;color:#d9dee7;margin-bottom:6px}.value{float:right;color:var(--gold)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.status{font-size:12px;color:var(--muted);line-height:1.45;margin-top:9px}
-.progress{height:9px;background:#0d1117;border-radius:999px;overflow:hidden;border:1px solid #252c36}.progress>div{height:100%;width:0;background:var(--gold)}
-.meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
-.chapters{display:flex;gap:8px;overflow:auto}.chapter{flex:0 0 auto;border:1px solid var(--border);background:#121720;color:#ddd;border-radius:12px;padding:10px 12px;max-width:78vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chapter.active{border-color:var(--gold)}
-.reader{font:19px/1.82 Georgia,"Times New Roman",serif}.sent{border-radius:6px;padding:1px 2px}.sent.active{background:rgba(216,180,106,.23)}.sent.done{color:#9ca5b0}
-.now{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:8px}
-.bottom{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:58px 1fr 58px;gap:9px;background:rgba(12,14,18,.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
-.small{font-size:11px;color:var(--muted);line-height:1.45}.tag{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:4px 7px;font-size:11px;color:var(--muted);margin-right:5px}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
+body{padding-bottom:calc(98px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:15;background:rgba(12,15,20,.94);backdrop-filter:blur(15px);padding:calc(13px + env(safe-area-inset-top)) 17px 13px;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:20px}.sub{font-size:12px;color:var(--muted);margin-top:4px}
+main{max-width:900px;margin:auto;padding:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:19px;padding:15px;margin-bottom:12px}
+.btn{appearance:none;border:1px solid var(--line);background:#202630;color:var(--txt);min-height:48px;border-radius:14px;padding:11px 14px;font-weight:750;font-size:15px}.btn.primary{background:var(--gold);border-color:var(--gold);color:#1a150b}.btn.block{width:100%}.btn:disabled{opacity:.42}.btn.sm{min-height:40px;font-size:13px;padding:8px 10px}
+input[type=file]{display:none}select,input[type=range]{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:11px;font-size:15px}
+label{display:block;font-size:12px;color:#d9dee7;margin-bottom:6px}.value{float:right;color:var(--gold)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status{font-size:12px;line-height:1.45;color:var(--muted);margin-top:10px}.status.ok{color:#b9e8c9}.status.bad{color:#f1aaaa}.tiny{font-size:11px;color:var(--muted);line-height:1.45}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 8px;font-size:11px;color:var(--muted);margin:4px 5px 0 0}.tag.good{border-color:#426a52;color:#a8d8b7}
+.chapters{display:flex;gap:8px;overflow:auto;padding-bottom:2px;scroll-snap-type:x proximity}.chapter{flex:0 0 auto;max-width:80vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#121821;border:1px solid var(--line);border-radius:13px;padding:10px 12px;color:#dfe3e9;font-size:13px}.chapter.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(221,185,102,.25)}
+.progress{height:9px;background:#0c1118;border:1px solid #28303b;border-radius:999px;overflow:hidden}.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .2s}.meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}.now{font-size:12px;color:var(--muted);margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.readerTitle{font-size:21px;font-weight:800;margin-bottom:12px}.reader{font-family:Georgia,"Times New Roman",serif;font-size:19px;line-height:1.82;white-space:pre-wrap}.sent{padding:1px 2px;border-radius:5px}.sent.active{background:rgba(221,185,102,.24);box-shadow:0 0 0 1px rgba(221,185,102,.14)}.sent.done{color:#9ea6b0}.sent.flag{border-bottom:2px solid var(--gold)}
+.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:58px 1fr 58px;gap:9px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(10,13,17,.96);backdrop-filter:blur(16px);border-top:1px solid var(--line)}
+.diag{padding:10px 12px;border-radius:12px;background:#11161e;border:1px solid var(--line);font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}.diag.ok{color:#b9e8c9;border-color:#345b43}.diag.bad{color:#f1aaaa;border-color:#6a3a3a}
+@media(min-width:720px){main{padding:20px}.reader{font-size:20px}}
 </style>
 </head>
 <body>
-<header>
-  <h1>Audiobook Reviewer</h1>
-  <div class="sub">TTS neural local • sem API • sem tokens</div>
-</header>
+<header><h1>Audiobook Reviewer</h1><div class="sub">R03 • vozes pt-BR do iPhone • sem API • sem tokens</div></header>
 <main>
-  <section class="card">
-    <button id="installBtn" class="btn block" hidden>Adicionar à Tela de Início</button>
-    <label class="btn primary block" for="file">📖 Abrir PDF, DOCX ou TXT</label>
-    <input id="file" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"/>
-    <div id="status" class="status">Primeiro carregue o modelo neural. Na primeira vez, o iPhone precisará de internet; depois o navegador poderá reutilizar os arquivos em cache.</div>
-  </section>
+<section class="card">
+<label class="btn primary block" for="file">📖 Abrir PDF, DOCX ou TXT</label>
+<input id="file" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain">
+<div id="fileStatus" class="status">O manuscrito é processado no próprio navegador.</div>
+</section>
 
-  <section class="card">
-    <button id="loadModel" class="btn primary block">🧠 Carregar voz neural local</button>
-    <div style="margin-top:10px">
-      <label>Voz brasileira</label>
-      <select id="voice">
-        <option value="pf_dora">Dora — feminina</option>
-        <option value="pm_alex">Alex — masculina</option>
-        <option value="pm_santa">Santa — masculina</option>
-      </select>
-    </div>
-    <div class="grid" style="margin-top:12px">
-      <div><label>Velocidade <span id="speedV" class="value">1,00×</span></label><input id="speed" type="range" min=".75" max="1.25" step=".05" value="1"/></div>
-      <div><label>Bloco <span id="chunkV" class="value">220</span></label><input id="chunk" type="range" min="120" max="360" step="20" value="220"/></div>
-    </div>
-    <div class="small" style="margin-top:10px"><span class="tag">Kokoro-82M</span><span class="tag">pt-BR</span><span class="tag">local</span></div>
-    <button id="testVoice" class="btn block" style="margin-top:12px" disabled>🔊 Testar voz com uma frase</button>
-  </section>
-
-  <section class="card">
-    <strong>Capítulos</strong>
-    <div id="chapters" class="chapters" style="margin-top:10px"><span class="status">Abra um livro para gerar os capítulos.</span></div>
-  </section>
-
-  <section class="card">
-    <div class="progress"><div id="bar"></div></div>
-    <div class="meta"><span id="pct">0%</span><span id="pos">—</span></div>
-    <div id="now" class="now">Nenhum trecho em reprodução.</div>
-    <div id="genStatus" class="status" style="margin-top:10px;color:#d8b46a">Motor de áudio aguardando.</div>
-  </section>
-
-  <section class="card">
-    <div id="readerTitle" style="font-size:19px;font-weight:800;margin-bottom:10px">Leitor</div>
-    <div id="reader" class="reader">Abra um texto para começar.</div>
-  </section>
-
-  <section class="card small">
-    <strong>Importante para o iPhone</strong><br><br>
-    Esta versão gera a voz no próprio navegador. O primeiro carregamento do modelo é pesado e pode demorar.
-    Em iPhones com menos memória, o Safari pode encerrar a página durante a geração. O app salva automaticamente
-    o capítulo e o trecho atual.
-  </section>
-</main>
-
-<div class="bottom">
-  <button id="prev" class="btn">◀</button>
-  <button id="play" class="btn primary" disabled>▶ Gerar e ouvir</button>
-  <button id="next" class="btn">▶</button>
+<section class="card">
+<div class="row" style="justify-content:space-between"><strong>Narrador</strong><span id="voiceCount" class="tag">buscando vozes…</span></div>
+<div style="margin-top:12px"><label>Voz em português</label><select id="voice"></select></div>
+<div class="grid" style="margin-top:12px">
+<div><label>Velocidade <span id="rateV" class="value">0,95×</span></label><input id="rate" type="range" min="0.70" max="1.30" step="0.05" value="0.95"></div>
+<div><label>Tom <span id="pitchV" class="value">1,00</span></label><input id="pitch" type="range" min="0.80" max="1.20" step="0.05" value="1"></div>
 </div>
+<div style="margin-top:12px"><label>Modo de leitura</label><select id="mode"><option value="audiobook">Audiobook — natural</option><option value="review">Revisão — mais pausado</option><option value="fast">Fluxo — um pouco mais rápido</option></select></div>
+<button id="testVoice" class="btn block" style="margin-top:12px">🔊 Testar voz selecionada</button>
+<div id="voiceDiag" class="diag">Aguardando as vozes do iPhone.</div>
+<div class="tiny" style="margin-top:9px">Dica: vozes “Premium”, “Enhanced/Aprimorada” ou instaladas em Ajustes → Acessibilidade → Conteúdo Falado costumam soar melhor quando o iOS as disponibiliza ao Safari.</div>
+</section>
 
-<script type="module">
+<section class="card"><div class="row" style="justify-content:space-between"><strong>Capítulos</strong><span id="words" class="tag">0 palavras</span></div><div id="chapters" class="chapters" style="margin-top:10px"><span class="status">Abra o livro para gerar a navegação.</span></div></section>
+
+<section class="card">
+<div class="progress"><div id="bar"></div></div><div class="meta"><span id="pct">0%</span><span id="pos">—</span></div><div id="now" class="now">Nenhum trecho em reprodução.</div>
+<div class="row" style="margin-top:10px"><button id="flag" class="btn sm">⚑ Marcar trecho</button><button id="clearFlags" class="btn sm">Limpar marcas</button></div>
+</section>
+
+<section class="card"><div id="readerTitle" class="readerTitle">Leitor</div><div id="reader" class="reader">Abra um manuscrito para começar.</div></section>
+
+<section class="card tiny"><strong>Sobre esta versão</strong><br><br>Ela usa a Web Speech API disponibilizada pelo Safari/iOS. Não baixa modelos de IA e não envia o texto para uma API do aplicativo. A disponibilidade e a qualidade das vozes dependem das vozes que o próprio iPhone expõe ao Safari. O progresso e as marcações ficam salvos neste navegador.</section>
+</main>
+<div class="bottom"><button id="prev" class="btn">◀</button><button id="play" class="btn primary" disabled>▶ Ouvir</button><button id="next" class="btn">▶</button></div>
+
+<script>
 const $=id=>document.getElementById(id);
-let tts=null, book={name:"",chapters:[]}, ci=0, si=0, busy=false, audio=null, deferredPrompt=null;
-const KEY="audiobook_reviewer_pwa_v1";
+const KEY='audiobook_reviewer_r03';
+let book={name:'',chapters:[]},ci=0,si=0,voices=[],ptVoices=[],playing=false,paused=false,stopped=true,current=null,timer=null,flags=new Set();
 
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
-$("installBtn").onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;$("installBtn").hidden=true}};
+function setDiag(t,type=''){const e=$('voiceDiag');e.textContent=t;e.className='diag '+type}
+function clean(t){return t.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{4,}/g,'\n\n\n').replace(/[ \t]{2,}/g,' ').trim()}
+function splitSentences(t){const a=t.match(/[^.!?…\n]+(?:[.!?…]+["'”’)]*|\n+|$)/g)||[t];return a.map(x=>x.trim()).filter(Boolean)}
+function detectChapters(t){const lines=t.split('\n'),m=[],re=/^(cap[ií]tulo|chapter|pr[oó]logo|prel[uú]dio|ep[ií]logo|parte)\b.{0,100}$/i;lines.forEach((l,i)=>{const s=l.trim();if(re.test(s))m.push({i,title:s})});if(!m.length)return[{title:'Livro completo',sentences:splitSentences(t)}];const out=[];if(m[0].i>0){const x=lines.slice(0,m[0].i).join('\n').trim();if(x.length>40)out.push({title:'Abertura',sentences:splitSentences(x)})}m.forEach((x,k)=>{const end=k<m.length-1?m[k+1].i:lines.length;const p=lines.slice(x.i,end).join('\n').trim();out.push({title:x.title,sentences:splitSentences(p)})});return out}
 
-if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+function voiceScore(v){const n=(v.name||'').toLowerCase();let s=0;if((v.lang||'').toLowerCase()==='pt-br')s+=100;if(n.includes('premium'))s+=30;if(n.includes('enhanced')||n.includes('aprim'))s+=25;if(v.localService)s+=10;if(v.default)s+=5;return s}
+function loadVoices(){voices=speechSynthesis.getVoices()||[];ptVoices=voices.filter(v=>(v.lang||'').toLowerCase().startsWith('pt')).sort((a,b)=>voiceScore(b)-voiceScore(a)||a.name.localeCompare(b.name));const sel=$('voice');const previous=sel.value;sel.innerHTML='';if(!ptVoices.length){const o=document.createElement('option');o.textContent='Nenhuma voz em português encontrada';o.value='';sel.appendChild(o);$('voiceCount').textContent='0 vozes';setDiag('O Safari não expôs nenhuma voz em português ainda. Aguarde alguns segundos e recarregue a página.','bad');return}ptVoices.forEach((v,i)=>{const o=document.createElement('option');o.value=String(voices.indexOf(v));o.textContent=`${v.name} — ${v.lang}${v.localService?' • local':''}${v.default?' • padrão':''}`;sel.appendChild(o)});if(previous&&[...sel.options].some(o=>o.value===previous))sel.value=previous;else sel.value=String(voices.indexOf(ptVoices[0]));$('voiceCount').textContent=`${ptVoices.length} voz(es)`;setDiag(`Vozes carregadas. Melhor opção detectada: ${ptVoices[0].name} (${ptVoices[0].lang}).`,'ok');save()}
+speechSynthesis.onvoiceschanged=loadVoices;loadVoices();setTimeout(loadVoices,400);setTimeout(loadVoices,1500);
 
-function setStatus(t){$("status").textContent=t}
-function clean(t){return t.replace(/\r/g,"").replace(/[ \t]+\n/g,"\n").replace(/\n{4,}/g,"\n\n\n").trim()}
-function sentences(t){return (t.match(/[^.!?…\n]+(?:[.!?…]+["'”’)]*|\n+|$)/g)||[t]).map(x=>x.trim()).filter(Boolean)}
-function chapters(t){
-  const lines=t.split("\n"), marks=[], re=/^(cap[ií]tulo|pr[oó]logo|ep[ií]logo|parte)\b.{0,80}$/i;
-  lines.forEach((l,i)=>{if(re.test(l.trim()))marks.push({i,title:l.trim()})});
-  if(!marks.length)return[{title:"Livro completo",sentences:sentences(t)}];
-  const out=[];
-  if(marks[0].i>0){const x=lines.slice(0,marks[0].i).join("\n").trim();if(x.length>40)out.push({title:"Abertura",sentences:sentences(x)})}
-  marks.forEach((m,k)=>{const e=k<marks.length-1?marks[k+1].i:lines.length;const x=lines.slice(m.i,e).join("\n").trim();out.push({title:m.title,sentences:sentences(x)})});
-  return out
-}
-function save(){if(book.name)localStorage.setItem(KEY,JSON.stringify({name:book.name,ci,si,voice:$("voice").value,speed:$("speed").value,chunk:$("chunk").value}))}
-function restore(){try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(x&&x.name===book.name){ci=Math.min(x.ci||0,book.chapters.length-1);si=Math.min(x.si||0,book.chapters[ci].sentences.length-1);$("voice").value=x.voice||"pf_dora";$("speed").value=x.speed||"1";$("chunk").value=x.chunk||"220"}}catch{}}
-function render(){
-  const ch=$("chapters");ch.innerHTML="";
-  book.chapters.forEach((c,i)=>{const b=document.createElement("button");b.className="chapter"+(i===ci?" active":"");b.textContent=`${i+1}. ${c.title}`;b.onclick=()=>{stopAudio();ci=i;si=0;render();save()};ch.appendChild(b)});
-  const c=book.chapters[ci]; if(!c)return;
-  $("readerTitle").textContent=c.title;$("reader").innerHTML="";
-  c.sentences.forEach((s,i)=>{const x=document.createElement("span");x.className="sent"+(i===si?" active":i<si?" done":"");x.textContent=s+" ";x.onclick=()=>{stopAudio();si=i;render();save()};$("reader").appendChild(x)});
-  let total=0,done=0;book.chapters.forEach((c,i)=>{total+=c.sentences.length;if(i<ci)done+=c.sentences.length});done+=si;
-  const p=total?Math.round(done/total*100):0;$("bar").style.width=p+"%";$("pct").textContent=p+"%";$("pos").textContent=`${ci+1}/${book.chapters.length} • ${si+1}/${c.sentences.length}`;$("now").textContent=`${c.title} — trecho ${si+1}`;
-  const active=$("reader").querySelector(".sent.active");if(active)setTimeout(()=>active.scrollIntoView({behavior:"smooth",block:"center"}),120);
-  $("speedV").textContent=Number($("speed").value).toFixed(2).replace(".",",")+"×";$("chunkV").textContent=$("chunk").value
-}
-$("speed").oninput=()=>{render();save()};$("chunk").oninput=()=>{render();save()};$("voice").onchange=save;
+function selectedVoice(){const i=Number($('voice').value);return Number.isFinite(i)?voices[i]:null}
+function modeSettings(){const m=$('mode').value;if(m==='review')return{rate:Number($('rate').value)*0.92,pause:380,max:240};if(m==='fast')return{rate:Number($('rate').value)*1.08,pause:80,max:300};return{rate:Number($('rate').value),pause:180,max:280}}
+function splitForSpeech(text,max){if(text.length<=max)return[text];const parts=[];let rest=text;while(rest.length>max){let cut=Math.max(rest.lastIndexOf('. ',max),rest.lastIndexOf('; ',max),rest.lastIndexOf(', ',max),rest.lastIndexOf(' ',max));if(cut<80)cut=max;parts.push(rest.slice(0,cut+1).trim());rest=rest.slice(cut+1).trim()}if(rest)parts.push(rest);return parts}
 
-async function readPDF(f){
-  if(!window.pdfjsLib) throw new Error("Leitor PDF não carregou.");
-  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-  const data=await f.arrayBuffer();
-  const pdf=await pdfjsLib.getDocument({data}).promise;
-  const out=[];
-  for(let n=1;n<=pdf.numPages;n++){
-    setStatus(`Extraindo PDF — página ${n} de ${pdf.numPages}…`);
-    const page=await pdf.getPage(n);
-    const c=await page.getTextContent();
-    out.push(c.items.map(x=>x.str).join(" "));
-  }
-  return out.join("\n\n");
-}
-async function readDOCX(f){
-  if(!window.mammoth) throw new Error("Leitor DOCX não carregou.");
-  const data=await f.arrayBuffer();
-  const r=await mammoth.extractRawText({arrayBuffer:data});
-  return r.value;
-}
-$("file").onchange=async e=>{
-  const f=e.target.files[0];if(!f)return;
-  try{
-    setStatus("Lendo manuscrito…");
-    const ext=(f.name.split(".").pop()||"").toLowerCase();
-    let raw=ext==="pdf"?await readPDF(f):ext==="docx"?await readDOCX(f):await f.text();
-    let text=clean(raw); if(text.length<20)throw new Error("Não foi possível extrair texto suficiente.");
-    book={name:f.name,chapters:chapters(text)};ci=0;si=0;restore();render();
-    setStatus(`Livro carregado: ${book.chapters.length} capítulo(s).`);
-    $("play").disabled=!tts;
-  }catch(err){console.error(err);setStatus("Erro ao abrir o arquivo: "+(err.message||err))}
-};
+function save(){if(!book.name)return;localStorage.setItem(KEY,JSON.stringify({name:book.name,ci,si,voice:$('voice').value,rate:$('rate').value,pitch:$('pitch').value,mode:$('mode').value,flags:[...flags]}))}
+function restore(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&x.name===book.name){ci=Math.min(x.ci||0,book.chapters.length-1);si=Math.min(x.si||0,book.chapters[ci].sentences.length-1);if(x.rate)$('rate').value=x.rate;if(x.pitch)$('pitch').value=x.pitch;if(x.mode)$('mode').value=x.mode;if(x.voice)setTimeout(()=>{$('voice').value=x.voice},300);flags=new Set(x.flags||[])}}catch{}}
+function keyFor(c,s){return`${c}:${s}`}
+function updateLabels(){$('rateV').textContent=Number($('rate').value).toFixed(2).replace('.',',')+'×';$('pitchV').textContent=Number($('pitch').value).toFixed(2).replace('.',',')}
+['rate','pitch'].forEach(id=>$(id).oninput=()=>{updateLabels();save()});$('mode').onchange=save;$('voice').onchange=save;updateLabels();
 
-$("loadModel").onclick=async()=>{
-  if(tts)return;
-  $("loadModel").disabled=true;setStatus("Carregando Kokoro local… no primeiro uso isso pode levar alguns minutos.");
-  try{
-    const { KokoroTTS } = await import("https://esm.sh/kokoro-js@1.2.1");
-    tts = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
-      dtype:"q8",
-      device:"wasm",
-    });
-    setStatus("Modelo neural carregado. A geração agora acontece no iPhone.");
-    $("loadModel").textContent="✅ Modelo neural pronto";$("play").disabled=!book.chapters.length;$("testVoice").disabled=false;$("genStatus").textContent="Modelo carregado. Faça primeiro o teste de voz.";
-  }catch(e){
-    console.error(e);setStatus("Não foi possível carregar o modelo neste Safari. Esta é a principal compatibilidade que precisamos validar no seu iPhone.");
-    $("loadModel").disabled=false;
-  }
-};
+function render(){const c=book.chapters[ci];const ch=$('chapters');ch.innerHTML='';book.chapters.forEach((x,i)=>{const b=document.createElement('button');b.className='chapter'+(i===ci?' active':'');b.textContent=`${i+1}. ${x.title}`;b.onclick=()=>{stopSpeech();ci=i;si=0;render();save()};ch.appendChild(b)});if(!c)return;$('readerTitle').textContent=c.title;const r=$('reader');r.innerHTML='';c.sentences.forEach((s,i)=>{const e=document.createElement('span');e.className='sent'+(i===si?' active':i<si?' done':'')+(flags.has(keyFor(ci,i))?' flag':'');e.textContent=s+' ';e.onclick=()=>{stopSpeech();si=i;render();save()};r.appendChild(e)});let total=0,done=0;book.chapters.forEach((x,i)=>{total+=x.sentences.length;if(i<ci)done+=x.sentences.length});done+=si;const p=total?Math.round(done/total*100):0;$('bar').style.width=p+'%';$('pct').textContent=p+'%';$('pos').textContent=`${ci+1}/${book.chapters.length} • ${si+1}/${c.sentences.length}`;$('now').textContent=`${c.title} — trecho ${si+1}`;const a=r.querySelector('.sent.active');if(a)setTimeout(()=>a.scrollIntoView({behavior:'smooth',block:'center'}),100)}
 
-function stopAudio(){if(audio){audio.pause();audio=null}busy=false;$("play").textContent="▶ Gerar e ouvir";$("genStatus").textContent="Áudio parado."}
-function splitText(text,n){if(text.length<=n)return text;const cut=text.lastIndexOf(" ",n);return text.slice(0,cut>80?cut:n)}
-async function generateAndPlay(text, advanceAfter=false){
-  if(!tts){$("genStatus").textContent="Modelo neural ainda não carregado.";return false}
-  if(busy)return false;
-  busy=true;
-  const started=Date.now();
-  $("genStatus").textContent="Preparando geração neural…";
-  $("play").textContent="⏳ Gerando…";
-  let tick=setInterval(()=>{$("genStatus").textContent=`Gerando no iPhone… ${Math.floor((Date.now()-started)/1000)} s`;},1000);
-  try{
-    const generation=tts.generate(text,{voice:$("voice").value,speed:Number($("speed").value)});
-    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error("A geração excedeu 90 segundos no Safari.")),90000));
-    const out=await Promise.race([generation,timeout]);
-    clearInterval(tick);
-    $("genStatus").textContent=`Áudio gerado em ${((Date.now()-started)/1000).toFixed(1)} s. Iniciando reprodução…`;
-    const blob=out.toBlob();
-    const url=URL.createObjectURL(blob);
-    audio=new Audio();
-    audio.preload="auto";
-    audio.src=url;
-    audio.onplay=()=>{$("play").textContent="⏸ Pausar";$("genStatus").textContent="Reproduzindo áudio neural."};
-    audio.onerror=()=>{busy=false;$("genStatus").textContent="O áudio foi gerado, mas o Safari não conseguiu reproduzi-lo.";URL.revokeObjectURL(url)};
-    audio.onended=()=>{
-      URL.revokeObjectURL(url);audio=null;busy=false;$("genStatus").textContent="Trecho concluído.";
-      if(advanceAfter){
-        const c=book.chapters[ci];
-        if(si<c.sentences.length-1){si++;render();save();setTimeout(speakCurrent,120)}
-        else if(ci<book.chapters.length-1){ci++;si=0;render();save();setTimeout(speakCurrent,120)}
-        else{$("play").textContent="▶ Concluído";$("genStatus").textContent="Livro concluído."}
-      } else {$("play").textContent="▶ Gerar e ouvir"}
-    };
-    await audio.play();
-    return true;
-  }catch(e){
-    clearInterval(tick);console.error(e);busy=false;$("play").textContent="▶ Gerar e ouvir";
-    $("genStatus").textContent="ERRO: "+(e.message||String(e));
-    setStatus("Falha na geração neural. Veja o diagnóstico junto ao player.");
-    return false;
-  }
-}
-$("testVoice").onclick=()=>generateAndPlay("Esta é uma frase curta para testar a voz neural em português brasileiro.",false);
-async function speakCurrent(){
-  if(!tts||!book.chapters.length||busy)return;
-  const c=book.chapters[ci]; if(!c)return;
-  render();save();
-  const text=splitText(c.sentences[si],Math.min(180,Number($("chunk").value)));
-  $("genStatus").textContent=`Trecho com ${text.length} caracteres pronto para gerar.`;
-  await generateAndPlay(text,true);
-}
-$("play").onclick=()=>{
-  if(audio&&!audio.paused){audio.pause();$("play").textContent="▶ Continuar";$("genStatus").textContent="Pausado.";return}
-  if(audio&&audio.paused){audio.play();$("play").textContent="⏸ Pausar";return}
-  speakCurrent()
-};
-$("prev").onclick=()=>{stopAudio();if(si>0)si--;else if(ci>0){ci--;si=Math.max(0,book.chapters[ci].sentences.length-1)}render();save()};
-$("next").onclick=()=>{stopAudio();const c=book.chapters[ci];if(!c)return;if(si<c.sentences.length-1)si++;else if(ci<book.chapters.length-1){ci++;si=0}render();save()};
+async function readPDF(f){if(!window.pdfjsLib)throw new Error('PDF.js não carregou.');pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';const data=await f.arrayBuffer();const pdf=await pdfjsLib.getDocument({data}).promise;const out=[];for(let p=1;p<=pdf.numPages;p++){$('fileStatus').textContent=`Extraindo PDF — página ${p} de ${pdf.numPages}…`;const page=await pdf.getPage(p),ct=await page.getTextContent();out.push(ct.items.map(i=>i.str).join(' '))}return out.join('\n\n')}
+async function readDOCX(f){if(!window.mammoth)throw new Error('Mammoth não carregou.');const a=await f.arrayBuffer();return(await mammoth.extractRawText({arrayBuffer:a})).value}
+$('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;stopSpeech();try{$('fileStatus').textContent='Lendo manuscrito…';const ext=(f.name.split('.').pop()||'').toLowerCase();const raw=ext==='pdf'?await readPDF(f):ext==='docx'?await readDOCX(f):await f.text();const text=clean(raw);if(text.length<20)throw new Error('Texto insuficiente.');book={name:f.name,chapters:detectChapters(text)};ci=0;si=0;flags=new Set();restore();const wc=(text.match(/\b[\p{L}\p{N}’'-]+\b/gu)||[]).length;$('words').textContent=wc.toLocaleString('pt-BR')+' palavras';render();$('play').disabled=false;$('fileStatus').textContent=`Livro carregado: ${book.chapters.length} capítulo(s).`;save()}catch(err){$('fileStatus').textContent='Erro: '+(err.message||err)}};
+
+function speakPieces(pieces,index,onDone){if(stopped)return;if(index>=pieces.length){onDone();return}const u=new SpeechSynthesisUtterance(pieces[index]);current=u;const v=selectedVoice();if(v)u.voice=v;const st=modeSettings();u.lang=v?.lang||'pt-BR';u.rate=Math.max(.5,Math.min(2,st.rate));u.pitch=Number($('pitch').value);u.volume=1;u.onstart=()=>{playing=true;paused=false;$('play').textContent='⏸ Pausar';setDiag(`Reproduzindo com ${v?.name||'voz padrão'} (${u.lang}).`,'ok')};u.onend=()=>{if(!stopped)setTimeout(()=>speakPieces(pieces,index+1,onDone),30)};u.onerror=e=>{if(!['canceled','interrupted'].includes(e.error)){setDiag('Erro de reprodução: '+e.error,'bad');stopped=true;playing=false;$('play').textContent='▶ Ouvir'}};speechSynthesis.speak(u)}
+function speakCurrent(){if(!book.chapters.length||stopped)return;const c=book.chapters[ci];if(si>=c.sentences.length){if(ci<book.chapters.length-1){ci++;si=0;render();save();speakCurrent()}else{stopSpeech();setDiag('Fim do livro.','ok')}return}render();save();const st=modeSettings(),pieces=splitForSpeech(c.sentences[si],st.max);speakPieces(pieces,0,()=>{if(stopped)return;si++;render();save();timer=setTimeout(speakCurrent,st.pause)})}
+function startSpeech(){if(!book.chapters.length)return;if(speechSynthesis.paused){speechSynthesis.resume();paused=false;$('play').textContent='⏸ Pausar';return}if(speechSynthesis.speaking){speechSynthesis.pause();paused=true;$('play').textContent='▶ Continuar';return}stopped=false;playing=true;speakCurrent()}
+function stopSpeech(){stopped=true;playing=false;paused=false;clearTimeout(timer);speechSynthesis.cancel();$('play').textContent='▶ Ouvir'}
+$('play').onclick=startSpeech;
+$('prev').onclick=()=>{stopSpeech();if(si>0)si--;else if(ci>0){ci--;si=Math.max(0,book.chapters[ci].sentences.length-1)}render();save()};
+$('next').onclick=()=>{stopSpeech();const c=book.chapters[ci];if(!c)return;if(si<c.sentences.length-1)si++;else if(ci<book.chapters.length-1){ci++;si=0}render();save()};
+$('testVoice').onclick=()=>{speechSynthesis.cancel();const v=selectedVoice();if(!v){setDiag('Nenhuma voz em português selecionada.','bad');return}const u=new SpeechSynthesisUtterance('Durante muito tempo, antes que os mapas aprendessem a separar os povos por linhas, as correntes seguiam livres.');u.voice=v;u.lang=v.lang||'pt-BR';u.rate=Number($('rate').value);u.pitch=Number($('pitch').value);u.onstart=()=>setDiag(`Teste em reprodução: ${v.name} — ${v.lang}.`,'ok');u.onend=()=>setDiag(`Teste concluído com ${v.name}. Se a voz estiver boa, abra o livro e toque em Ouvir.`,'ok');u.onerror=e=>setDiag('Erro no teste: '+e.error,'bad');speechSynthesis.speak(u)};
+$('flag').onclick=()=>{if(!book.chapters.length)return;const k=keyFor(ci,si);if(flags.has(k))flags.delete(k);else flags.add(k);render();save()};$('clearFlags').onclick=()=>{flags.clear();render();save()};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body></html>
