@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0d0f13"/>
+<link rel="manifest" href="./manifest.webmanifest"/>
+<title>Audiobook Reviewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<style>
+:root{--bg:#0d0f13;--panel:#171a21;--panel2:#20252e;--text:#f4f4f2;--muted:#9da6b3;--gold:#d8b46a;--border:#2c333e;--red:#d96f6f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif}
+body{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:10;background:rgba(13,15,19,.95);backdrop-filter:blur(14px);padding:calc(12px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid var(--border)}
+h1{font-size:18px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+main{padding:14px;max-width:850px;margin:auto}.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:12px}
+.btn{border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:14px;padding:12px 14px;font-size:15px;font-weight:700;min-height:46px}.btn.primary{background:var(--gold);border-color:var(--gold);color:#1a150c}.btn.block{width:100%}.btn:disabled{opacity:.45}
+input[type=file]{display:none} select,input[type=range]{width:100%;background:#10141a;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px;font-size:15px}
+label{display:block;font-size:12px;color:#d9dee7;margin-bottom:6px}.value{float:right;color:var(--gold)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.status{font-size:12px;color:var(--muted);line-height:1.45;margin-top:9px}
+.progress{height:9px;background:#0d1117;border-radius:999px;overflow:hidden;border:1px solid #252c36}.progress>div{height:100%;width:0;background:var(--gold)}
+.meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+.chapters{display:flex;gap:8px;overflow:auto}.chapter{flex:0 0 auto;border:1px solid var(--border);background:#121720;color:#ddd;border-radius:12px;padding:10px 12px;max-width:78vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chapter.active{border-color:var(--gold)}
+.reader{font:19px/1.82 Georgia,"Times New Roman",serif}.sent{border-radius:6px;padding:1px 2px}.sent.active{background:rgba(216,180,106,.23)}.sent.done{color:#9ca5b0}
+.now{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:8px}
+.bottom{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:58px 1fr 58px;gap:9px;background:rgba(12,14,18,.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+.small{font-size:11px;color:var(--muted);line-height:1.45}.tag{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:4px 7px;font-size:11px;color:var(--muted);margin-right:5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Audiobook Reviewer</h1>
+  <div class="sub">TTS neural local • sem API • sem tokens</div>
+</header>
+<main>
+  <section class="card">
+    <button id="installBtn" class="btn block" hidden>Adicionar à Tela de Início</button>
+    <label class="btn primary block" for="file">📖 Abrir PDF, DOCX ou TXT</label>
+    <input id="file" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"/>
+    <div id="status" class="status">Primeiro carregue o modelo neural. Na primeira vez, o iPhone precisará de internet; depois o navegador poderá reutilizar os arquivos em cache.</div>
+  </section>
+
+  <section class="card">
+    <button id="loadModel" class="btn primary block">🧠 Carregar voz neural local</button>
+    <div style="margin-top:10px">
+      <label>Voz brasileira</label>
+      <select id="voice">
+        <option value="pf_dora">Dora — feminina</option>
+        <option value="pm_alex">Alex — masculina</option>
+        <option value="pm_santa">Santa — masculina</option>
+      </select>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div><label>Velocidade <span id="speedV" class="value">1,00×</span></label><input id="speed" type="range" min=".75" max="1.25" step=".05" value="1"/></div>
+      <div><label>Bloco <span id="chunkV" class="value">220</span></label><input id="chunk" type="range" min="120" max="360" step="20" value="220"/></div>
+    </div>
+    <div class="small" style="margin-top:10px"><span class="tag">Kokoro-82M</span><span class="tag">pt-BR</span><span class="tag">local</span></div>
+  </section>
+
+  <section class="card">
+    <strong>Capítulos</strong>
+    <div id="chapters" class="chapters" style="margin-top:10px"><span class="status">Abra um livro para gerar os capítulos.</span></div>
+  </section>
+
+  <section class="card">
+    <div class="progress"><div id="bar"></div></div>
+    <div class="meta"><span id="pct">0%</span><span id="pos">—</span></div>
+    <div id="now" class="now">Nenhum trecho em reprodução.</div>
+  </section>
+
+  <section class="card">
+    <div id="readerTitle" style="font-size:19px;font-weight:800;margin-bottom:10px">Leitor</div>
+    <div id="reader" class="reader">Abra um texto para começar.</div>
+  </section>
+
+  <section class="card small">
+    <strong>Importante para o iPhone</strong><br><br>
+    Esta versão gera a voz no próprio navegador. O primeiro carregamento do modelo é pesado e pode demorar.
+    Em iPhones com menos memória, o Safari pode encerrar a página durante a geração. O app salva automaticamente
+    o capítulo e o trecho atual.
+  </section>
+</main>
+
+<div class="bottom">
+  <button id="prev" class="btn">◀</button>
+  <button id="play" class="btn primary" disabled>▶ Gerar e ouvir</button>
+  <button id="next" class="btn">▶</button>
+</div>
+
+<script type="module">
+const $=id=>document.getElementById(id);
+let tts=null, book={name:"",chapters:[]}, ci=0, si=0, busy=false, audio=null, deferredPrompt=null;
+const KEY="audiobook_reviewer_pwa_v1";
+
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
+$("installBtn").onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;$("installBtn").hidden=true}};
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+
+function setStatus(t){$("status").textContent=t}
+function clean(t){return t.replace(/\r/g,"").replace(/[ \t]+\n/g,"\n").replace(/\n{4,}/g,"\n\n\n").trim()}
+function sentences(t){return (t.match(/[^.!?…\n]+(?:[.!?…]+["'”’)]*|\n+|$)/g)||[t]).map(x=>x.trim()).filter(Boolean)}
+function chapters(t){
+  const lines=t.split("\n"), marks=[], re=/^(cap[ií]tulo|pr[oó]logo|ep[ií]logo|parte)\b.{0,80}$/i;
+  lines.forEach((l,i)=>{if(re.test(l.trim()))marks.push({i,title:l.trim()})});
+  if(!marks.length)return[{title:"Livro completo",sentences:sentences(t)}];
+  const out=[];
+  if(marks[0].i>0){const x=lines.slice(0,marks[0].i).join("\n").trim();if(x.length>40)out.push({title:"Abertura",sentences:sentences(x)})}
+  marks.forEach((m,k)=>{const e=k<marks.length-1?marks[k+1].i:lines.length;const x=lines.slice(m.i,e).join("\n").trim();out.push({title:m.title,sentences:sentences(x)})});
+  return out
+}
+function save(){if(book.name)localStorage.setItem(KEY,JSON.stringify({name:book.name,ci,si,voice:$("voice").value,speed:$("speed").value,chunk:$("chunk").value}))}
+function restore(){try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(x&&x.name===book.name){ci=Math.min(x.ci||0,book.chapters.length-1);si=Math.min(x.si||0,book.chapters[ci].sentences.length-1);$("voice").value=x.voice||"pf_dora";$("speed").value=x.speed||"1";$("chunk").value=x.chunk||"220"}}catch{}}
+function render(){
+  const ch=$("chapters");ch.innerHTML="";
+  book.chapters.forEach((c,i)=>{const b=document.createElement("button");b.className="chapter"+(i===ci?" active":"");b.textContent=`${i+1}. ${c.title}`;b.onclick=()=>{stopAudio();ci=i;si=0;render();save()};ch.appendChild(b)});
+  const c=book.chapters[ci]; if(!c)return;
+  $("readerTitle").textContent=c.title;$("reader").innerHTML="";
+  c.sentences.forEach((s,i)=>{const x=document.createElement("span");x.className="sent"+(i===si?" active":i<si?" done":"");x.textContent=s+" ";x.onclick=()=>{stopAudio();si=i;render();save()};$("reader").appendChild(x)});
+  let total=0,done=0;book.chapters.forEach((c,i)=>{total+=c.sentences.length;if(i<ci)done+=c.sentences.length});done+=si;
+  const p=total?Math.round(done/total*100):0;$("bar").style.width=p+"%";$("pct").textContent=p+"%";$("pos").textContent=`${ci+1}/${book.chapters.length} • ${si+1}/${c.sentences.length}`;$("now").textContent=`${c.title} — trecho ${si+1}`;
+  const active=$("reader").querySelector(".sent.active");if(active)setTimeout(()=>active.scrollIntoView({behavior:"smooth",block:"center"}),120);
+  $("speedV").textContent=Number($("speed").value).toFixed(2).replace(".",",")+"×";$("chunkV").textContent=$("chunk").value
+}
+$("speed").oninput=()=>{render();save()};$("chunk").oninput=()=>{render();save()};$("voice").onchange=save;
+
+async function readPDF(f){
+  if(!window.pdfjsLib) throw new Error("Leitor PDF não carregou.");
+  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const data=await f.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data}).promise;
+  const out=[];
+  for(let n=1;n<=pdf.numPages;n++){
+    setStatus(`Extraindo PDF — página ${n} de ${pdf.numPages}…`);
+    const page=await pdf.getPage(n);
+    const c=await page.getTextContent();
+    out.push(c.items.map(x=>x.str).join(" "));
+  }
+  return out.join("\n\n");
+}
+async function readDOCX(f){
+  if(!window.mammoth) throw new Error("Leitor DOCX não carregou.");
+  const data=await f.arrayBuffer();
+  const r=await mammoth.extractRawText({arrayBuffer:data});
+  return r.value;
+}
+$("file").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    setStatus("Lendo manuscrito…");
+    const ext=(f.name.split(".").pop()||"").toLowerCase();
+    let raw=ext==="pdf"?await readPDF(f):ext==="docx"?await readDOCX(f):await f.text();
+    let text=clean(raw); if(text.length<20)throw new Error("Não foi possível extrair texto suficiente.");
+    book={name:f.name,chapters:chapters(text)};ci=0;si=0;restore();render();
+    setStatus(`Livro carregado: ${book.chapters.length} capítulo(s).`);
+    $("play").disabled=!tts;
+  }catch(err){console.error(err);setStatus("Erro ao abrir o arquivo: "+(err.message||err))}
+};
+
+$("loadModel").onclick=async()=>{
+  if(tts)return;
+  $("loadModel").disabled=true;setStatus("Carregando Kokoro local… no primeiro uso isso pode levar alguns minutos.");
+  try{
+    const { KokoroTTS } = await import("https://esm.sh/kokoro-js@1.2.1");
+    tts = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
+      dtype:"q8",
+      device:"wasm",
+    });
+    setStatus("Modelo neural carregado. A geração agora acontece no iPhone.");
+    $("loadModel").textContent="✅ Modelo neural pronto";$("play").disabled=!book.chapters.length;
+  }catch(e){
+    console.error(e);setStatus("Não foi possível carregar o modelo neste Safari. Esta é a principal compatibilidade que precisamos validar no seu iPhone.");
+    $("loadModel").disabled=false;
+  }
+};
+
+function stopAudio(){if(audio){audio.pause();audio=null}busy=false;$("play").textContent="▶ Gerar e ouvir"}
+function splitText(text,n){if(text.length<=n)return text;const cut=text.lastIndexOf(" ",n);return text.slice(0,cut>80?cut:n)}
+async function speakCurrent(){
+  if(!tts||!book.chapters.length||busy)return;
+  const c=book.chapters[ci]; if(!c)return;
+  busy=true;$("play").textContent="⏳ Gerando…";render();save();
+  try{
+    const text=splitText(c.sentences[si],Number($("chunk").value));
+    const out=await tts.generate(text,{voice:$("voice").value,speed:Number($("speed").value),lang_code:"p"});
+    const blob=out.toBlob();
+    const url=URL.createObjectURL(blob);
+    audio=new Audio(url);
+    audio.onplay=()=>{$("play").textContent="⏸ Pausar"};
+    audio.onended=()=>{URL.revokeObjectURL(url);audio=null;busy=false;if(si<c.sentences.length-1){si++;render();save();speakCurrent()}else if(ci<book.chapters.length-1){ci++;si=0;render();save();speakCurrent()}else{$("play").textContent="▶ Concluído"}};
+    await audio.play();
+  }catch(e){console.error(e);busy=false;$("play").textContent="▶ Gerar e ouvir";setStatus("Erro durante a geração neural: "+(e.message||e))}
+}
+$("play").onclick=()=>{
+  if(audio&&!audio.paused){audio.pause();$("play").textContent="▶ Continuar";return}
+  if(audio&&audio.paused){audio.play();$("play").textContent="⏸ Pausar";return}
+  speakCurrent()
+};
+$("prev").onclick=()=>{stopAudio();if(si>0)si--;else if(ci>0){ci--;si=Math.max(0,book.chapters[ci].sentences.length-1)}render();save()};
+$("next").onclick=()=>{stopAudio();const c=book.chapters[ci];if(!c)return;if(si<c.sentences.length-1)si++;else if(ci<book.chapters.length-1){ci++;si=0}render();save()};
+</script>
+</body></html>
