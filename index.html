@@ -59,6 +59,7 @@ label{display:block;font-size:12px;color:#d9dee7;margin-bottom:6px}.value{float:
       <div><label>Bloco <span id="chunkV" class="value">220</span></label><input id="chunk" type="range" min="120" max="360" step="20" value="220"/></div>
     </div>
     <div class="small" style="margin-top:10px"><span class="tag">Kokoro-82M</span><span class="tag">pt-BR</span><span class="tag">local</span></div>
+    <button id="testVoice" class="btn block" style="margin-top:12px" disabled>🔊 Testar voz com uma frase</button>
   </section>
 
   <section class="card">
@@ -70,6 +71,7 @@ label{display:block;font-size:12px;color:#d9dee7;margin-bottom:6px}.value{float:
     <div class="progress"><div id="bar"></div></div>
     <div class="meta"><span id="pct">0%</span><span id="pos">—</span></div>
     <div id="now" class="now">Nenhum trecho em reprodução.</div>
+    <div id="genStatus" class="status" style="margin-top:10px;color:#d8b46a">Motor de áudio aguardando.</div>
   </section>
 
   <section class="card">
@@ -171,32 +173,65 @@ $("loadModel").onclick=async()=>{
       device:"wasm",
     });
     setStatus("Modelo neural carregado. A geração agora acontece no iPhone.");
-    $("loadModel").textContent="✅ Modelo neural pronto";$("play").disabled=!book.chapters.length;
+    $("loadModel").textContent="✅ Modelo neural pronto";$("play").disabled=!book.chapters.length;$("testVoice").disabled=false;$("genStatus").textContent="Modelo carregado. Faça primeiro o teste de voz.";
   }catch(e){
     console.error(e);setStatus("Não foi possível carregar o modelo neste Safari. Esta é a principal compatibilidade que precisamos validar no seu iPhone.");
     $("loadModel").disabled=false;
   }
 };
 
-function stopAudio(){if(audio){audio.pause();audio=null}busy=false;$("play").textContent="▶ Gerar e ouvir"}
+function stopAudio(){if(audio){audio.pause();audio=null}busy=false;$("play").textContent="▶ Gerar e ouvir";$("genStatus").textContent="Áudio parado."}
 function splitText(text,n){if(text.length<=n)return text;const cut=text.lastIndexOf(" ",n);return text.slice(0,cut>80?cut:n)}
+async function generateAndPlay(text, advanceAfter=false){
+  if(!tts){$("genStatus").textContent="Modelo neural ainda não carregado.";return false}
+  if(busy)return false;
+  busy=true;
+  const started=Date.now();
+  $("genStatus").textContent="Preparando geração neural…";
+  $("play").textContent="⏳ Gerando…";
+  let tick=setInterval(()=>{$("genStatus").textContent=`Gerando no iPhone… ${Math.floor((Date.now()-started)/1000)} s`;},1000);
+  try{
+    const generation=tts.generate(text,{voice:$("voice").value,speed:Number($("speed").value)});
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error("A geração excedeu 90 segundos no Safari.")),90000));
+    const out=await Promise.race([generation,timeout]);
+    clearInterval(tick);
+    $("genStatus").textContent=`Áudio gerado em ${((Date.now()-started)/1000).toFixed(1)} s. Iniciando reprodução…`;
+    const blob=out.toBlob();
+    const url=URL.createObjectURL(blob);
+    audio=new Audio();
+    audio.preload="auto";
+    audio.src=url;
+    audio.onplay=()=>{$("play").textContent="⏸ Pausar";$("genStatus").textContent="Reproduzindo áudio neural."};
+    audio.onerror=()=>{busy=false;$("genStatus").textContent="O áudio foi gerado, mas o Safari não conseguiu reproduzi-lo.";URL.revokeObjectURL(url)};
+    audio.onended=()=>{
+      URL.revokeObjectURL(url);audio=null;busy=false;$("genStatus").textContent="Trecho concluído.";
+      if(advanceAfter){
+        const c=book.chapters[ci];
+        if(si<c.sentences.length-1){si++;render();save();setTimeout(speakCurrent,120)}
+        else if(ci<book.chapters.length-1){ci++;si=0;render();save();setTimeout(speakCurrent,120)}
+        else{$("play").textContent="▶ Concluído";$("genStatus").textContent="Livro concluído."}
+      } else {$("play").textContent="▶ Gerar e ouvir"}
+    };
+    await audio.play();
+    return true;
+  }catch(e){
+    clearInterval(tick);console.error(e);busy=false;$("play").textContent="▶ Gerar e ouvir";
+    $("genStatus").textContent="ERRO: "+(e.message||String(e));
+    setStatus("Falha na geração neural. Veja o diagnóstico junto ao player.");
+    return false;
+  }
+}
+$("testVoice").onclick=()=>generateAndPlay("Esta é uma frase curta para testar a voz neural em português brasileiro.",false);
 async function speakCurrent(){
   if(!tts||!book.chapters.length||busy)return;
   const c=book.chapters[ci]; if(!c)return;
-  busy=true;$("play").textContent="⏳ Gerando…";render();save();
-  try{
-    const text=splitText(c.sentences[si],Number($("chunk").value));
-    const out=await tts.generate(text,{voice:$("voice").value,speed:Number($("speed").value),lang_code:"p"});
-    const blob=out.toBlob();
-    const url=URL.createObjectURL(blob);
-    audio=new Audio(url);
-    audio.onplay=()=>{$("play").textContent="⏸ Pausar"};
-    audio.onended=()=>{URL.revokeObjectURL(url);audio=null;busy=false;if(si<c.sentences.length-1){si++;render();save();speakCurrent()}else if(ci<book.chapters.length-1){ci++;si=0;render();save();speakCurrent()}else{$("play").textContent="▶ Concluído"}};
-    await audio.play();
-  }catch(e){console.error(e);busy=false;$("play").textContent="▶ Gerar e ouvir";setStatus("Erro durante a geração neural: "+(e.message||e))}
+  render();save();
+  const text=splitText(c.sentences[si],Math.min(180,Number($("chunk").value)));
+  $("genStatus").textContent=`Trecho com ${text.length} caracteres pronto para gerar.`;
+  await generateAndPlay(text,true);
 }
 $("play").onclick=()=>{
-  if(audio&&!audio.paused){audio.pause();$("play").textContent="▶ Continuar";return}
+  if(audio&&!audio.paused){audio.pause();$("play").textContent="▶ Continuar";$("genStatus").textContent="Pausado.";return}
   if(audio&&audio.paused){audio.play();$("play").textContent="⏸ Pausar";return}
   speakCurrent()
 };
